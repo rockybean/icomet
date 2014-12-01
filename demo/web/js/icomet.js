@@ -40,7 +40,7 @@ function iComet(config){
 		}
 	}
 	self.sub_timeout = config.sub_timeout || (60 * 1000);
-	
+
 	self.id = iComet.id__++;
 	self.cb = 'icomet_cb_' + self.id;
 	self.timer = null;
@@ -53,7 +53,7 @@ function iComet(config){
 	self.data_seq = 0;
 	self.noop_seq = 0;
 	self.sign_cb = null;
-	
+
 	self.pub_url = config.pub_url;
 	if(config.sub_url.indexOf('?') == -1){
 		self.sub_url = config.sub_url + '?';
@@ -138,7 +138,7 @@ function iComet(config){
 		if(msg.type == 'data'){
 			self.last_sub_time = (new Date()).getTime();
 			if(msg.seq != self.data_seq){
-				if(msg.seq == 0){
+				if(msg.seq == 0 || msg.seq == 1 ){
 					self.log('server restarted');
 					// TODO: lost_cb(msg);
 					self.sub_cb(msg);
@@ -149,7 +149,7 @@ function iComet(config){
 					// TODO: lost_cb(msg);
 					self.sub_cb(msg);
 				}
-				
+
 				self.data_seq = msg.seq;
 				if(self.data_seq == 2147483647){
 					self.data_seq = -2147483648;
@@ -180,7 +180,7 @@ function iComet(config){
 			return;
 		}
 	}
-	
+
 	self.sign = function(callback){
 		self.log('sign in icomet server...');
 		self.sign_cb = callback;
@@ -209,7 +209,7 @@ function iComet(config){
 			jsonpCallback: "cb"
 		});
 	}
-	
+
 	self.start = function(){
 		self.stopped = false;
 		if(self.timer){
@@ -259,7 +259,7 @@ function iComet(config){
 			self.sign_timer = null;
 		}
 	}
-	
+
 	self._start_timeout_checker = function(){
 		if(self.timer){
 			clearTimeout(self.timer);
@@ -273,7 +273,7 @@ function iComet(config){
 			}
 		}, 1000);
 	}
-	
+
 	// msg must be string
 	self.pub = function(content, callback){
 		if(typeof(content) != 'string' || !self.pub_url){
@@ -289,7 +289,7 @@ function iComet(config){
 
 		$.getJSON(self.pub_url, data, callback);
 	}
-	
+
 	self.log = function(){
 		if( !self.enable_log ){
 			return;
