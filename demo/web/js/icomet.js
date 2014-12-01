@@ -20,7 +20,14 @@ function iComet(config){
 	config.sub_url = config.sub_url || config.subUrl;
 	config.pub_url = config.pub_url || config.pubUrl;
 	config.sign_url = config.sign_url || config.signUrl;
-	
+
+	// open log or not
+	config.enable_log = config.enable_log || config.enableLog;
+	self.enable_log = config.enable_log ? config.enable_log : true ;
+	// whether fast reconnect to server when accept noop message . The push action is more instantly when this is true.
+	config.fast_reconnect_when_accept_noop_message = config.fast_reconnect_when_accept_noop_message|| config.fastReconnectWhenAcceptNoopMessage;
+	self.fast_reconnect_when_accept_noop_message = config.fast_reconnect_when_accept_noop_message? config.fast_reconnect_when_accept_noop_message : true;
+
 	self.cname = config.channel;
 	self.sub_cb = function(msg){
 		var cb = config.callback || config.sub_callback;
@@ -121,7 +128,7 @@ function iComet(config){
 				}
 				// if the channel is empty, it is probably empty next time,
 				// so pause some seconds before sub again
-				setTimeout(self_sub, 1000 + Math.random() * 2000);
+				 self.fast_reconnect_when_accept_noop_message ? self_sub() : setTimeout(self_sub, 1000 + Math.random() * 2000) ;
 			}else{
 				// we have created more than one connection, ignore it
 				self.log('ignore exceeded connections');
@@ -131,7 +138,7 @@ function iComet(config){
 		if(msg.type == 'data'){
 			self.last_sub_time = (new Date()).getTime();
 			if(msg.seq != self.data_seq){
-				if(msg.seq == 0 || msg.seq == 1){
+				if(msg.seq == 0){
 					self.log('server restarted');
 					// TODO: lost_cb(msg);
 					self.sub_cb(msg);
@@ -284,6 +291,9 @@ function iComet(config){
 	}
 	
 	self.log = function(){
+		if( !self.enable_log ){
+			return;
+		}
 		try{
 			var v = arguments;
 			var p = 'icomet[' + self.id + ']';
